@@ -27,24 +27,7 @@ while True:
 
     keys = pg.key.get_pressed()
 
-    # if keys[pg.K_w] and cubey >= 0:
-    #     if keys[pg.K_w] and keys[pg.K_a] and cubex >= 0:
-    #         cubey -= 2
-    #         cubex -= 2
-    #     if keys[pg.K_w] and keys[pg.K_d] and cubex <= 686:
-    #         cubey -= 2
-    #         cubex += 2
-    #     else:
-    #         cubey -= 2
-    # elif keys[pg.K_s] and cubey <= 314:
-    #     if keys[pg.K_s] and keys[pg.K_a] and cubex >= 0:
-    #         cubey += 2
-    #         cubex -= 2
-    #     if keys[pg.K_s] and keys[pg.K_d] and cubex <= 686:
-    #         cubey += 2
-    #         cubex += 2
-    #     else:
-    #         cubey += 2
+
     if keys[pg.K_a] and cubex >= 0:
         cubex -= 2
     elif keys[pg.K_d] and cubex <= 686:
