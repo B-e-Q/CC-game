@@ -1,6 +1,7 @@
 import pygame as pg
 from sys import exit
 import time
+pg.mixer.init()
 
 pg.init()
 
@@ -8,10 +9,19 @@ pg.init()
 W = 736 * 2
 H = 414 * 2
 
+redw = pg.image.load("/Users/dulatulynurasyl/VSCODE/Pygame/Game-CC/CC-game/graphics/red_wins.png")
+greenw = pg.image.load("/Users/dulatulynurasyl/VSCODE/Pygame/Game-CC/CC-game/graphics/green_wins.png")
+#music
+pg.mixer.music.load("/Users/dulatulynurasyl/VSCODE/Pygame/Game-CC/CC-game/sound/main_theme.mp3")
+pg.mixer.music.set_volume(0.1)
+pg.mixer.music.play(-1)
+redw = pg.transform.scale(redw, (W, H))
+greenw = pg.transform.scale(greenw, (W, H))
+
 # Частота кадров
 clock = pg.time.Clock()
 screen = pg.display.set_mode((W, H))
-bg = pg.image.load("graphics/background1.jpeg")
+bg = pg.image.load("/Users/dulatulynurasyl/VSCODE/Pygame/Game-CC/CC-game/graphics/background1.jpeg")
 bg = pg.transform.scale(bg, (W, H))
 
 # Параметры кубов
@@ -178,12 +188,17 @@ while True:
     else:
         screen.blit(deadcube1, (cubex1, cubey1+50))
 
+        screen.blit(redw, (0, 0))
 
 
     if not is_dead2:
+
         screen.blit(cube2, (cubex2, cubey2))
     else:
         screen.blit(deadcube2, (cubex2, cubey2+50))
+
+        screen.blit(greenw, (0, 0))
+        
     
 
    
@@ -193,6 +208,8 @@ while True:
         damage_effect_surface.fill((255, 0, 0, damage_effect_opacity))  # Красный с текущей прозрачностью
         screen.blit(damage_effect_surface, (0, 0))  # Накладываем поверх экрана
         damage_effect_opacity = max(0, damage_effect_opacity - 5)  # Постепенное уменьшение прозрачности
+
+
 
     pg.display.update()
     clock.tick(60)
