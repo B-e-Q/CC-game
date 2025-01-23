@@ -10,6 +10,7 @@ H = 414 * 2
 
 redw = pg.image.load("graphics/red_wins.png")
 greenw = pg.image.load("graphics/green_wins.png")
+
 #music
 pg.mixer.music.load("sound/main_theme.mp3")
 pg.mixer.music.set_volume(0.05)
@@ -80,6 +81,7 @@ deadcube2.fill("red")
 gun = pg.image.load("graphics/gun.jpg")
 gunright = pg.transform.scale(gun, (50, 17))
 gunleft = pg.transform.flip(gunright, 50, 0)
+
 
 
 while True:
@@ -160,7 +162,7 @@ while True:
         if x > W:
             line1 = None
         elif abs(x - cubex2) < 50 and abs(y - cubey2) < 100:
-            HP2 -= 100
+            HP2 -= 50
             damage_effect_opacity = 255
             line1 = None
             if HP2 == 0:
@@ -176,7 +178,7 @@ while True:
         if x < 0:
             line2 = None
         elif abs(x - cubex1) < 50 and abs(y - cubey1) < 100:
-            HP1 -= 100
+            HP1 -= 50
             damage_effect_opacity = 255
             line2 = None
             if HP1 == 0:
