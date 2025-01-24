@@ -4,7 +4,12 @@ class Fighter():
     def __init__(self, player, x, y):
         self.player = player
         self.flip = False
-        self.rect = pg.Rect((x,y, 50, 100))
+        self.animation_list = self.load_images()
+        self.action = 0 #0:idle , 1:run , 2:jump
+        self.frame_index = 0
+        self.image = self.animation_list[self.action][self.frame_index]
+        self.update_time = pg.time.get_ticks()
+        self.rect = pg.Rect((x,y, 50, 160))
         self.dead = False
         self.vel_y = 0
         self.jump = False
@@ -14,49 +19,44 @@ class Fighter():
         self.bullet = None
         self.hit = True
         self.shotkd = 0
+        self.running = False
+        self.current_fireball_frame = 0  
+        self.fireball_frame_counter = 0  
+        self.fireball_frame_delay = 3
 
-        self.dir = 1
-
-        self.fireball = []  # Список кадров анимации патрона
-        for i in range(1, 6):  # Предположим, 5 кадров
-            path = f"graphics/projectile/fireball{i}.png"
-            frame = pg.image.load(path).convert_alpha()
-            frame = pg.transform.scale(frame, (50, 50))
-            self.fireball.append(frame)
         
-        self.current_fireball_frame = 0  # Текущий кадр анимации
-        self.fireball_frame_counter = 0  # Счётчик кадров
-        self.fireball_frame_delay = 3  # Задержка между кадрами
-
-        self.sam_idle = []
+    def load_images(self):
+        sam_idle = []
         for i in range(1, 16):
             path = f"graphics/sam_idle/sam_idle{i}.png"
             frame = pg.image.load(path).convert_alpha()
-            self.sam_idle.append(frame)
-
-        self.current_frame_idle = 0     
-        self.current_frame_run = 0     
-        self.current_frame_jump = 0     
-        self.frame_counter = 0       
-        self.frame_delay = 5        
-
-        self.sam_run = []
+            sam_idle.append(frame)
+        sam_run = []
         for i in range(1, 17):
             path = f"graphics/sam_run/sam_run{i}.png"
             frame = pg.image.load(path).convert_alpha()
-            self.sam_run.append(frame)
-
-
-
-        self.sam_jump = []
+            sam_run.append(frame)
+        sam_jump = []
         for i in range(1, 10): 
             path = f"graphics/sam_jump/sam_jump{i}.png"
             frame = pg.image.load(path).convert_alpha()
-            self.sam_jump.append(frame)
-
-        self.current_animation = "idle"
-
+            sam_jump.append(frame)
+        fireball = []  
+        for i in range(1, 6):  
+            path = f"graphics/projectile/fireball{i}.png"
+            frame = pg.image.load(path).convert_alpha()
+            frame = pg.transform.scale(frame, (50, 50))
+            fireball.append(frame)
+        attack = []  
+        for i in range(1, 7):  
+            path = f"graphics/sam_attack/sam_attack{i}.png"
+            frame = pg.image.load(path).convert_alpha()
+            attack.append(frame)
         
+        animation_list = [sam_idle, sam_run, sam_jump, fireball, attack]
+        return animation_list
+
+            
 
 
     def move(self, surface, w, h, target):
@@ -64,6 +64,7 @@ class Fighter():
         GRAVITY = 1
         dx = 0
         dy = 0
+        self.running = False
         
         key = pg.key.get_pressed()
 
@@ -71,40 +72,25 @@ class Fighter():
             target.health = 0
             target.dead = True
         
-        if self.player == 1 and not self.dead:
+
+        #First player
+        if self.player == 1 and not self.dead and not self.attacking:
             #movement
             if key[pg.K_a]:
                 dx = -SPEED
-
+                self.running = True
             if key[pg.K_d]:
                 dx = SPEED
-
+                self.running = True
                 self.current_animation = "run"
-            if key[pg.K_d]:
-                dx = SPEED
-                self.current_animation = "run"
-
-            if not(key[pg.K_a] or key[pg.K_d]) and not(self.jump):
-                self.current_animation = "idle" #returning to idle
-
-
             #attacking
-            if key[pg.K_r] and not self.attacking:
+            if key[pg.K_r] and not self.jump:
                 self.attack(surface, target)
 
             #jump
             if key[pg.K_w] and not self.jump:
                 self.vel_y = -20
                 self.jump = True
-
-                
-            
-            if self.jump:
-                self.current_animation = "jump"
-
-            if self.current_animation != "jump" and self.jump:
-                self.current_animation = "jump"
-                self.current_frame_jump = 0
             
             #gravity
             self.vel_y += GRAVITY
@@ -118,43 +104,26 @@ class Fighter():
             
 
 
-
-        elif self.player == 2 and not self.dead:
+        #second player
+        elif self.player == 2 and not self.dead and not self.attacking:
             #movement
             if key[pg.K_LEFT]:
                 dx = -SPEED
+                self.running = True
 
             if key[pg.K_RIGHT]:
                 dx = SPEED
-
-                self.current_animation = "run"
-            if key[pg.K_RIGHT]:
-                dx = SPEED
-                self.current_animation = "run"
-            if not(key[pg.K_a] or key[pg.K_d]) and not(self.jump):
-                self.current_animation = "idle" #returning to idle
-
+                self.running = True
 
             #attacking
-            if key[pg.K_RSHIFT] and not self.attacking:
+            if key[pg.K_RSHIFT] and not self.jump:
                 self.attack(surface, target)
 
             #jump
-
             if key[pg.K_UP] and not self.jump:
                 self.vel_y = -20
                 self.jump = True
 
-            if key[pg.K_w] and not self.jump:
-                self.vel_y = -20
-                self.jump = True
-            
-            if self.jump:
-                self.current_animation = "jump"
-
-            if self.current_animation != "jump" and self.jump:
-                self.current_animation = "jump"
-                self.current_frame_jump = 0
 
             #gravity
             self.vel_y += GRAVITY
@@ -163,23 +132,16 @@ class Fighter():
             if key[pg.K_l] and self.hit and self.shotkd == 10:
                 self.bullet = (self.rect.centerx + 30 * (-1)** self.flip, self.rect.centery)
                 self.shotkd = 0
-
-
-        if self.attacking:
-            self.kd+=1
-            if self.kd == 50:
-                self.attacking = False
-                self.kd = 0
         
 
 
         if self.hit:
-            self.shotkd +1
+            self.shotkd += 1
         
 
         self.too_close(target, surface)
         
-        self.shoot(surface, "Yellow", w, target)
+        self.shoot(surface, w, target)
         
         if self.rect.left + dx < 0:
             dx = -self.rect.left
@@ -200,10 +162,33 @@ class Fighter():
         self.dead_rect = pg.Rect((self.rect.x-50,self.rect.y+50, 100, 50))
         
 
+    def update(self):
+        animation_cooldown = 100
+        #check action
+        if self.attacking:
+            self.update_action(4)
+        elif self.jump:
+            self.update_action(2)
+            animation_cooldown = 50
+        elif self.running:
+            self.update_action(1)
+        else:
+            self.update_action(0)
+
+        self.image = self.animation_list[self.action][self.frame_index]
+        if pg.time.get_ticks() - self.update_time > animation_cooldown:
+            self.frame_index += 1
+            self.update_time = pg.time.get_ticks()
+        
+        if self.frame_index >= len(self.animation_list[self.action]):
+            self.frame_index = 0
+            if self.action == 4:
+                self.attacking = False
+        
 
     def attack(self, surface, target):
         self.attacking = True
-        attacking_rect = pg.Rect(self.rect.centerx - (2 * self.rect.width * self.flip), self.rect.y, 2 * self.rect.width, self.rect.height)
+        attacking_rect = pg.Rect(self.rect.centerx - (4 * self.rect.width * self.flip), self.rect.y, 4 * self.rect.width, self.rect.height)
         if attacking_rect.colliderect(target.rect):
             target.health -= 10
         pg.draw.rect(surface, "Blue", attacking_rect)
@@ -217,11 +202,11 @@ class Fighter():
             self.hit = True
 
 
-    def shoot(self, surface, color, w, target):
+    def shoot(self, surface, w, target):
         if self.bullet:
             # Получаем текущие координаты патрона
             x, y = self.bullet
-            x += 10 * (-1) ** self.flip
+            x += 15 * (-1) ** self.flip
             bullet = pg.Rect(x, y, 10, 5)
 
             # Обработка столкновений и выхода за пределы экрана
@@ -233,24 +218,26 @@ class Fighter():
                 self.bullet = None
                 self.hit = True
             else:
-                pg.draw.rect(surface, color, bullet)
-                self.bullet = (x, y) #Можно убрать, стоит для отладки
 
                 # Отображение анимации патрона
-                fireball_frame = self.fireball[self.current_fireball_frame]  # Получаем текущий кадр
+                fireball_frame = self.animation_list[3][self.current_fireball_frame]  # Получаем текущий кадр
                 fireball_frame = pg.transform.flip(fireball_frame, self.flip, False)
-                surface.blit(fireball_frame, (x - 40, y - 40))  # Отображаем кадр патрона
+                surface.blit(fireball_frame, (x - 30, y - 30))  # Отображаем кадр патрона
 
                 # Переключение кадров
                 self.fireball_frame_counter += 1
                 if self.fireball_frame_counter >= self.fireball_frame_delay:
-                    self.current_fireball_frame = (self.current_fireball_frame + 1) % len(self.fireball)
+                    self.current_fireball_frame = (self.current_fireball_frame + 1) % len(self.animation_list[3])
                     self.fireball_frame_counter = 0
 
                 # Сохраняем обновленные координаты патрона
                 self.bullet = (x, y)
 
-       
+    def update_action(self, new_action):
+        if new_action != self.action:
+            self.action = new_action
+            self.frame_index = 0
+            self.update_time = pg.time.get_ticks()
     
     def draw(self, surface, color):
         if self.dead:
@@ -258,29 +245,6 @@ class Fighter():
         else:
             pg.draw.rect(surface, color, self.rect)
 
-        # Определение текущего кадра для анимации
-        if self.current_animation == "idle":
-            frame = self.sam_idle[self.current_frame_idle]
-        elif self.current_animation == "run":
-            frame = self.sam_run[self.current_frame_run]
-        elif self.current_animation == "jump":
-            frame = self.sam_jump[self.current_frame_jump]
-
-        # Отражение кадра при необходимости
-        frame = pg.transform.flip(frame, self.flip, False)
-
-        # Отображение кадра на экране
-        surface.blit(frame, (self.rect.x - 190, self.rect.y - 120))  # Смещение анимации
-
-        # Логика переключения кадров для каждой анимации
-        self.frame_counter += 1
-        if self.frame_counter >= self.frame_delay:
-            if self.current_animation == "idle":
-                self.current_frame_idle = (self.current_frame_idle + 1) % len(self.sam_idle)
-            elif self.current_animation == "run":
-                self.current_frame_run = (self.current_frame_run + 1) % len(self.sam_run)
-            elif self.current_animation == "jump":
-                self.current_frame_jump = (self.current_frame_jump + 1) % len(self.sam_jump)
-
-            # Сбрасываем общий счётчик кадров
-            self.frame_counter = 0
+        img = pg.transform.flip(self.image, self.flip , False)
+        
+        surface.blit(img, (self.rect.x - 190, self.rect.y-60))

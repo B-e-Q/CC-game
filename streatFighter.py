@@ -71,6 +71,10 @@ while True:
 
     
     screen.blit(bg, (0,0))
+
+    cube1.update()
+    cube2.update()
+
     cube1.draw(screen, "Green")
     cube2.draw(screen, "Red")
     
