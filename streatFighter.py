@@ -19,7 +19,7 @@ def drawwgreen():
 
 #music
 pg.mixer.music.load("sound/main_theme.mp3")
-pg.mixer.music.set_volume(0.05)
+pg.mixer.music.set_volume(0 )
 pg.mixer.music.play(-1)
 redw = pg.transform.scale(redw, (W, H))
 greenw = pg.transform.scale(greenw, (W, H))
@@ -34,6 +34,20 @@ bg = pg.transform.scale(bg, (W, H))
 cube1 = Fighter(1, 100, H-160)
 cube2 = Fighter(2, W-150, H-160)
 
+redwin = 0
+greenwin = 0
+
+resetgreen = Fighter(1, 100, H-160)
+resetred = Fighter(2, W-150, H-160)
+
+rounds = [
+    pg.transform.scale(pg.image.load("graphics/1.png"), (W, H)),
+    pg.transform.scale(pg.image.load("graphics/2.png"), (W, H)),
+    pg.transform.scale(pg.image.load("graphics/3.png"), (W, H))
+]
+round_delay = 1
+current_round = 1
+alpha = 255
 pg.display.set_caption("Game!")
 
 def drawHealthBar(x, y, health):
@@ -55,10 +69,12 @@ while True:
             pg.quit()
             exit()
 
+    
     screen.blit(bg, (0,0))
     cube1.draw(screen, "Green")
     cube2.draw(screen, "Red")
     
+
     drawHealthBar(80, 50, cube1.health)
     drawHealthBar(800, 50, cube2.health)
 
@@ -69,10 +85,31 @@ while True:
     cube1.move(screen, W, H, cube2)
     cube2.move(screen, W, H, cube1)
 
-    if cube1.health == 0:
+    if cube1.dead and redwin >= 2:
         drawwinred()
-    elif cube2.health == 0:
+    elif cube2.dead and greenwin >= 2:
         drawwgreen()
+    else:
+        if current_round <= 3:
+            rounds[current_round-1].set_alpha(alpha)
+            screen.blit(rounds[current_round-1], (0, 0))
+            if alpha >= 0:
+                alpha-=1
+        if (cube1.dead or cube2.dead) and current_round < 3:
+            if round_delay == 180:
+                current_round += 1
+                if cube1.dead:
+                    redwin += 1
+                if cube2.dead:
+                    greenwin += 1
+                cube1 = resetgreen
+                cube2 = resetred
+                alpha = 255
+                print(cube1, greenwin, redwin)
+                round_delay = 1
+            round_delay+=1
+
+    
 
     pg.display.update()
     clock.tick(60)

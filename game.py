@@ -116,9 +116,6 @@ while True:
     if kd1 > 0:
         kd1 -=0.25
     
-    
-
-
     # Управление игроком 2
     if not is_dead2:
         if keys[pg.K_LEFT] and cubex2 > 0:  # Движение влево
