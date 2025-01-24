@@ -14,8 +14,7 @@ class Fighter():
         self.bullet = None
         self.hit = True
         self.shotkd = 0
-<<<<<<< HEAD
-=======
+
         self.dir = 1
 
         self.sam_idle = []
@@ -41,7 +40,7 @@ class Fighter():
             self.sam_jump.append(frame)
 
         self.current_animation = "idle"
->>>>>>> patch 1.5
+
         
 
 
@@ -61,10 +60,10 @@ class Fighter():
             #movement
             if key[pg.K_a]:
                 dx = -SPEED
-<<<<<<< HEAD
+
             if key[pg.K_d]:
                 dx = SPEED
-=======
+
                 self.current_animation = "run"
             if key[pg.K_d]:
                 dx = SPEED
@@ -72,7 +71,7 @@ class Fighter():
 
             if not(key[pg.K_a] or key[pg.K_d]) and not(self.jump):
                 self.current_animation = "idle" #returning to idle
->>>>>>> patch 1.5
+
 
             #attacking
             if key[pg.K_r] and not self.attacking:
@@ -82,13 +81,12 @@ class Fighter():
             if key[pg.K_w] and not self.jump:
                 self.vel_y = -20
                 self.jump = True
-<<<<<<< HEAD
-=======
+
                 self.current_animation = "jump"
             
             if self.jump:
                 self.current_animation = "idle"
->>>>>>> patch 1.5
+
             
             #gravity
             self.vel_y += GRAVITY
@@ -107,28 +105,28 @@ class Fighter():
             #movement
             if key[pg.K_LEFT]:
                 dx = -SPEED
-<<<<<<< HEAD
+
             if key[pg.K_RIGHT]:
                 dx = SPEED
-=======
+
                 self.current_animation = "run"
             if key[pg.K_RIGHT]:
                 dx = SPEED
                 self.current_animation = "run"
             if not(key[pg.K_a] or key[pg.K_d]) and not(self.jump):
                 self.current_animation = "idle" #returning to idle
->>>>>>> patch 1.5
+
 
             #attacking
             if key[pg.K_RSHIFT] and not self.attacking:
                 self.attack(surface, target)
 
             #jump
-<<<<<<< HEAD
+
             if key[pg.K_UP] and not self.jump:
                 self.vel_y = -20
                 self.jump = True
-=======
+
             if key[pg.K_w] and not self.jump:
                 self.vel_y = -20
                 self.jump = True
@@ -136,7 +134,7 @@ class Fighter():
             
             if self.jump:
                 self.current_animation = "idle"
->>>>>>> patch 1.5
+
             
             #gravity
             self.vel_y += GRAVITY
@@ -216,12 +214,12 @@ class Fighter():
                 self.bullet = (x, y)
     
     def draw(self, surface, color):
-<<<<<<< HEAD
+
         if self.dead:
             pg.draw.rect(surface, color, self.dead_rect)
         else:
             pg.draw.rect(surface, color, self.rect)
-=======
+
         if self.current_animation == "idle":
             frame = self.sam_idle[self.current_frame]
         elif self.current_animation == "run":
@@ -244,4 +242,4 @@ class Fighter():
                 else self.sam_jump
             )
             self.frame_counter = 0
->>>>>>> patch 1.5
+
