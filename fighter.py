@@ -17,25 +17,40 @@ class Fighter():
 
         self.dir = 1
 
+        self.fireball = []  # Список кадров анимации патрона
+        for i in range(1, 6):  # Предположим, 5 кадров
+            path = f"graphics/projectile/fireball{i}.png"
+            frame = pg.image.load(path).convert_alpha()
+            frame = pg.transform.scale(frame, (50, 50))
+            self.fireball.append(frame)
+        
+        self.current_fireball_frame = 0  # Текущий кадр анимации
+        self.fireball_frame_counter = 0  # Счётчик кадров
+        self.fireball_frame_delay = 3  # Задержка между кадрами
+
         self.sam_idle = []
         for i in range(1, 16):
-            path = f"/Users/dulatulynurasyl/VSCODE/Pygame/graphics/sam_idle/sam_idle{i}.png"
+            path = f"graphics/sam_idle/sam_idle{i}.png"
             frame = pg.image.load(path).convert_alpha()
             self.sam_idle.append(frame)
 
-        self.current_frame = 0     
+        self.current_frame_idle = 0     
+        self.current_frame_run = 0     
+        self.current_frame_jump = 0     
         self.frame_counter = 0       
         self.frame_delay = 5        
 
         self.sam_run = []
         for i in range(1, 17):
-            path = f"/Users/dulatulynurasyl/VSCODE/Pygame/graphics/sam_run/sam_run{i}.png"
+            path = f"graphics/sam_run/sam_run{i}.png"
             frame = pg.image.load(path).convert_alpha()
             self.sam_run.append(frame)
 
+
+
         self.sam_jump = []
         for i in range(1, 10): 
-            path = f"/Users/dulatulynurasyl/VSCODE/Pygame/graphics/sam_jump/sam_jump{i}.png"
+            path = f"graphics/sam_jump/sam_jump{i}.png"
             frame = pg.image.load(path).convert_alpha()
             self.sam_jump.append(frame)
 
@@ -82,11 +97,14 @@ class Fighter():
                 self.vel_y = -20
                 self.jump = True
 
-                self.current_animation = "jump"
+                
             
             if self.jump:
-                self.current_animation = "idle"
+                self.current_animation = "jump"
 
+            if self.current_animation != "jump" and self.jump:
+                self.current_animation = "jump"
+                self.current_frame_jump = 0
             
             #gravity
             self.vel_y += GRAVITY
@@ -130,12 +148,14 @@ class Fighter():
             if key[pg.K_w] and not self.jump:
                 self.vel_y = -20
                 self.jump = True
-                self.current_animation = "jump"
             
             if self.jump:
-                self.current_animation = "idle"
+                self.current_animation = "jump"
 
-            
+            if self.current_animation != "jump" and self.jump:
+                self.current_animation = "jump"
+                self.current_frame_jump = 0
+
             #gravity
             self.vel_y += GRAVITY
             dy += self.vel_y
@@ -199,47 +219,68 @@ class Fighter():
 
     def shoot(self, surface, color, w, target):
         if self.bullet:
+            # Получаем текущие координаты патрона
             x, y = self.bullet
-            x += 10 * (-1)**self.flip
-            bullet = pg.Rect(x , y, 10, 5)
+            x += 10 * (-1) ** self.flip
+            bullet = pg.Rect(x, y, 10, 5)
+
+            # Обработка столкновений и выхода за пределы экрана
             self.hit = False
-            if x > w or x < 0:
+            if x > w or x < 0:  # Патрон вышел за пределы экрана
                 self.bullet = None
-            elif bullet.colliderect(target.rect):
+            elif bullet.colliderect(target.rect):  # Патрон попал в цель
                 target.health -= 10
                 self.bullet = None
                 self.hit = True
             else:
                 pg.draw.rect(surface, color, bullet)
+                self.bullet = (x, y) #Можно убрать, стоит для отладки
+
+                # Отображение анимации патрона
+                fireball_frame = self.fireball[self.current_fireball_frame]  # Получаем текущий кадр
+                fireball_frame = pg.transform.flip(fireball_frame, self.flip, False)
+                surface.blit(fireball_frame, (x - 40, y - 40))  # Отображаем кадр патрона
+
+                # Переключение кадров
+                self.fireball_frame_counter += 1
+                if self.fireball_frame_counter >= self.fireball_frame_delay:
+                    self.current_fireball_frame = (self.current_fireball_frame + 1) % len(self.fireball)
+                    self.fireball_frame_counter = 0
+
+                # Сохраняем обновленные координаты патрона
                 self.bullet = (x, y)
+
+       
     
     def draw(self, surface, color):
-
         if self.dead:
             pg.draw.rect(surface, color, self.dead_rect)
         else:
             pg.draw.rect(surface, color, self.rect)
 
+        # Определение текущего кадра для анимации
         if self.current_animation == "idle":
-            frame = self.sam_idle[self.current_frame]
+            frame = self.sam_idle[self.current_frame_idle]
         elif self.current_animation == "run":
-            frame = self.sam_run[self.current_frame]
+            frame = self.sam_run[self.current_frame_run]
         elif self.current_animation == "jump":
-            frame = self.sam_jump[self.current_frame]
+            frame = self.sam_jump[self.current_frame_jump]
 
-        # Если dir == -1, кадр зеркально отображается
-        
+        # Отражение кадра при необходимости
         frame = pg.transform.flip(frame, self.flip, False)
 
+        # Отображение кадра на экране
         surface.blit(frame, (self.rect.x - 190, self.rect.y - 120))  # Смещение анимации
 
-        # Логика переключения кадров
+        # Логика переключения кадров для каждой анимации
         self.frame_counter += 1
         if self.frame_counter >= self.frame_delay:
-            self.current_frame = (self.current_frame + 1) % len(
-                self.sam_idle if self.current_animation == "idle"
-                else self.sam_run if self.current_animation == "run"
-                else self.sam_jump
-            )
-            self.frame_counter = 0
+            if self.current_animation == "idle":
+                self.current_frame_idle = (self.current_frame_idle + 1) % len(self.sam_idle)
+            elif self.current_animation == "run":
+                self.current_frame_run = (self.current_frame_run + 1) % len(self.sam_run)
+            elif self.current_animation == "jump":
+                self.current_frame_jump = (self.current_frame_jump + 1) % len(self.sam_jump)
 
+            # Сбрасываем общий счётчик кадров
+            self.frame_counter = 0
