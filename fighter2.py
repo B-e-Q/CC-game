@@ -2,7 +2,7 @@ import pygame as pg
 
 
 
-class Fighter():
+class Fighter2():
     def __init__(self, player, x, y):
         self.player = player
         self.flip = False
@@ -29,18 +29,18 @@ class Fighter():
         
     def load_images(self):
         sam_idle = []
-        for i in range(1, 16):
-            path = f"graphics/sam_idle/sam_idle{i}.png"
+        for i in range(1, 9):
+            path = f"graphics/mag_idle/mag_idle{i}.png"
             frame = pg.image.load(path).convert_alpha()
             sam_idle.append(frame)
         sam_run = []
-        for i in range(1, 17):
-            path = f"graphics/sam_run/sam_run{i}.png"
+        for i in range(1, 13):
+            path = f"graphics/mag_run/mag_run{i}.png"
             frame = pg.image.load(path).convert_alpha()
             sam_run.append(frame)
         sam_jump = []
-        for i in range(1, 10): 
-            path = f"graphics/sam_jump/sam_jump{i}.png"
+        for i in range(1, 9): 
+            path = f"graphics/mag_idle/mag_idle{i}.png"
             frame = pg.image.load(path).convert_alpha()
             sam_jump.append(frame)
         fireball = []  
@@ -50,13 +50,13 @@ class Fighter():
             frame = pg.transform.scale(frame, (50, 50))
             fireball.append(frame)
         attack = []  
-        for i in range(1, 7):  
-            path = f"graphics/sam_attack/sam_attack{i}.png"
+        for i in range(1, 5):  
+            path = f"graphics/mag_attack/mag_attack{i}.png"
             frame = pg.image.load(path).convert_alpha()
             attack.append(frame)
         death = []  
-        for i in range(1, 17):  
-            path = f"graphics/sam_death/sam_death{i}.png"
+        for i in range(1, 13):  
+            path = f"graphics/mag_death/mag_death{i}.png"
             frame = pg.image.load(path).convert_alpha()
             death.append(frame)
         
@@ -188,6 +188,7 @@ class Fighter():
         else:
             self.update_action(0)
 
+        
         self.image = self.animation_list[self.action][self.frame_index]
         if pg.time.get_ticks() - self.update_time > animation_cooldown:
             self.frame_index += 1
@@ -254,12 +255,14 @@ class Fighter():
             self.update_time = pg.time.get_ticks()
     
     def draw(self, surface, color):
-        img = pg.transform.flip(self.image, self.flip , False)
+        pg.draw.rect(surface, "red", (self.rect.x, self.rect.y, 50, 100))
+        img = pg.transform.flip(self.image, not(self.flip) , False)
+        img = pg.transform.scale(img, (400, 400))
 
         if self.dead:
             surface.blit(img, (self.rect.x - 190, self.rect.y-85))
         else:
-            surface.blit(img, (self.rect.x - 190, self.rect.y-60))
+            surface.blit(img, (self.rect.x - 190, self.rect.y-100))
         
         
         

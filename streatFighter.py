@@ -1,13 +1,25 @@
 import pygame as pg
 from sys import exit
 from fighter import Fighter
+from fighter2 import Fighter2
+
 
 pg.mixer.init()
 pg.init()
 
+#colors
+GREEN = (36, 144, 0)
+BLACKR = (50, 0, 0 )
+BLACKR2 = (81, 0, 0 )
+
 # Размеры окна
 W = 736 * 2
 H = 414 * 2
+
+#ui
+ui = pg.image.load("graphics/ui_hp_bar.png")
+ui = pg.transform.scale(ui, (W, H))
+
 
 redw = pg.image.load("graphics/red_wins.png")
 greenw = pg.image.load("graphics/green_wins.png")
@@ -32,13 +44,13 @@ bg = pg.transform.scale(bg, (W, H))
 
 # Параметры кубов
 cube1 = Fighter(1, 100, H-160)
-cube2 = Fighter(2, W-150, H-160)
+cube2 = Fighter2(2, W-150, H-160)
 
 redwin = 0
 greenwin = 0
 
 resetgreen = Fighter(1, 100, H-160)
-resetred = Fighter(2, W-150, H-160)
+resetred = Fighter2(2, W-150, H-160)
 
 rounds = [
     pg.transform.scale(pg.image.load("graphics/1.png"), (W, H)),
@@ -51,10 +63,11 @@ alpha = 255
 pg.display.set_caption("Game!")
 
 def drawHealthBar(x, y, health):
+
     ratio = health/100
-    pg.draw.rect(screen, "White", (x-5, y-5, 610, 40))
-    pg.draw.rect(screen, "Red", (x,y, 600 , 30))
-    pg.draw.rect(screen, "Yellow", (x,y, 600 * ratio, 30))
+    pg.draw.rect(screen, BLACKR2, (x-5, y-5, 610, 40))
+    pg.draw.rect(screen, BLACKR, (x,y, 600 , 30))
+    pg.draw.rect(screen, GREEN, (x,y, 600 * ratio, 30))
 
 
 def drawKD(x, y, kd):
@@ -69,8 +82,8 @@ while True:
             pg.quit()
             exit()
 
-    
     screen.blit(bg, (0,0))
+    screen.blit(ui, (0,0))
 
     cube1.update()
     cube2.update()
@@ -113,6 +126,7 @@ while True:
                 round_delay = 1
             round_delay+=1
 
+    
     
 
     pg.display.update()
