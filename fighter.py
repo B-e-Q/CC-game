@@ -5,7 +5,7 @@ class Fighter():
         self.player = player
         self.flip = False
         self.animation_list = self.load_images()
-        self.action = 0 #0:idle , 1:run , 2:jump
+        self.action = 0 #0:idle , 1:run , 2:jump , 3:fireball , 4:attack
         self.frame_index = 0
         self.image = self.animation_list[self.action][self.frame_index]
         self.update_time = pg.time.get_ticks()
@@ -129,7 +129,7 @@ class Fighter():
             self.vel_y += GRAVITY
             dy += self.vel_y
 
-            if key[pg.K_l] and self.hit and self.shotkd == 10:
+            if key[pg.K_l] and self.hit:
                 self.bullet = (self.rect.centerx + 30 * (-1)** self.flip, self.rect.centery)
                 self.shotkd = 0
         
