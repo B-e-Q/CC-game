@@ -5,7 +5,7 @@ class Fighter():
         self.player = player
         self.flip = False
         self.animation_list = self.load_images()
-        self.action = 0 #0:idle , 1:run , 2:jump , 3:fireball , 4:attack
+        self.action = 0 #0:idle , 1:run , 2:jump , 3:fireball , 4:attack , 5:death
         self.frame_index = 0
         self.image = self.animation_list[self.action][self.frame_index]
         self.update_time = pg.time.get_ticks()
@@ -15,10 +15,10 @@ class Fighter():
         self.jump = False
         self.health = 100
         self.attacking = False
-        self.kd = 0
         self.bullet = None
         self.hit = True
         self.shotkd = 0
+        self.kd = 0
         self.running = False
         self.current_fireball_frame = 0  
         self.fireball_frame_counter = 0  
@@ -52,8 +52,13 @@ class Fighter():
             path = f"graphics/sam_attack/sam_attack{i}.png"
             frame = pg.image.load(path).convert_alpha()
             attack.append(frame)
+        death = []  
+        for i in range(1, 17):  
+            path = f"graphics/sam_death/sam_death{i}.png"
+            frame = pg.image.load(path).convert_alpha()
+            death.append(frame)
         
-        animation_list = [sam_idle, sam_run, sam_jump, fireball, attack]
+        animation_list = [sam_idle, sam_run, sam_jump, fireball, attack, death]
         return animation_list
 
             
@@ -156,16 +161,22 @@ class Fighter():
             self.flip = False
         else:
             self.flip = True
+        
+        if self.kd > 0:
+            self.kd -= 1
 
         self.rect.x += dx
         self.rect.y += dy
-        self.dead_rect = pg.Rect((self.rect.x-50,self.rect.y+50, 100, 50))
+       
         
 
     def update(self):
         animation_cooldown = 100
         #check action
-        if self.attacking:
+        if self.dead:
+            animation_cooldown = 200
+            self.update_action(5)
+        elif self.attacking:
             self.update_action(4)
         elif self.jump:
             self.update_action(2)
@@ -184,15 +195,16 @@ class Fighter():
             self.frame_index = 0
             if self.action == 4:
                 self.attacking = False
+                self.kd = 50
         
 
     def attack(self, surface, target):
-        self.attacking = True
-        attacking_rect = pg.Rect(self.rect.centerx - (4 * self.rect.width * self.flip), self.rect.y, 4 * self.rect.width, self.rect.height)
-        if attacking_rect.colliderect(target.rect):
-            target.health -= 10
-        pg.draw.rect(surface, "Blue", attacking_rect)
-    
+        if self.kd == 0:
+            self.attacking = True
+            attacking_rect = pg.Rect(self.rect.centerx - (4 * self.rect.width * self.flip), self.rect.y, 4 * self.rect.width, self.rect.height)
+            if attacking_rect.colliderect(target.rect):
+                target.health -= 10
+        
 
     def too_close(self, target, surface):
         close_rect = pg.Rect(self.rect.centerx - (10 * self.rect.width * self.flip), self.rect.y - 60, 10 * self.rect.width, self.rect.height + 60)
@@ -240,11 +252,12 @@ class Fighter():
             self.update_time = pg.time.get_ticks()
     
     def draw(self, surface, color):
-        if self.dead:
-            pg.draw.rect(surface, color, self.dead_rect)
-        else:
-            pg.draw.rect(surface, color, self.rect)
-
         img = pg.transform.flip(self.image, self.flip , False)
+
+        if self.dead:
+            surface.blit(img, (self.rect.x - 190, self.rect.y-85))
+        else:
+            surface.blit(img, (self.rect.x - 190, self.rect.y-60))
         
-        surface.blit(img, (self.rect.x - 190, self.rect.y-60))
+        
+        
